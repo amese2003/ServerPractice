@@ -4,6 +4,53 @@ using System.Threading.Tasks;
 
 namespace ServerCore
 {
+    class FastLock
+    {
+        public int id;
+    }
+    class SessionManager
+    {
+        static object _lock = new object();
+
+        public static void TestSession()
+        {
+            lock (_lock)
+            {
+
+            }
+        }
+
+        public static void Test()
+        {
+            lock (_lock)
+            {
+                UserManager.TestUser();
+            }
+        }
+
+    }
+
+    class UserManager
+    {
+        static object _lock = new object();
+
+        public static void Test()
+        {
+            lock (_lock)
+            {
+                SessionManager.TestSession();
+            }
+        }
+
+        public static void TestUser()
+        {
+            lock (_lock)
+            {
+
+            }
+        }
+    }
+
     
     class Program
     {
@@ -13,55 +60,18 @@ namespace ServerCore
 
         static void Thread_1()
         {
-            for (int i = 0; i < 1000000; i++)
+            for (int i = 0; i < 10000; i++)
             {
-                lock (_obj)
-                {
-                    number++;
-                    return;
-                }
-
-
-                //try
-                //{
-                //    Monitor.Enter(_obj);
-                //    number++;
-
-                //    return;
-                //}
-                //finally
-                //{
-                //    Monitor.Exit(_obj);
-                //}
-
-
-
-                //// 상호 배제 Mutual Exclusinve
-                //// Critical Section C++ = std::mutex
-                ////
-                //Monitor.Enter(_obj); // 문잠구기
-                //number++;
-
-                //// return;           // 데드락 유발
-
-                //Monitor.Exit(_obj); // 문 열기
+                SessionManager.Test();
             }
         }
 
         // 데드락...
         static void Thread_2()
         {
-            for (int i = 0; i < 1000000; i++)
+            for (int i = 0; i < 10000; i++)
             {
-                lock (_obj)
-                {
-                    number--;
-                    return;
-                }
-
-                //Monitor.Enter(_obj);
-                //number--;
-                //Monitor.Exit(_obj);
+                UserManager.Test();
             }
         }
 
@@ -71,6 +81,9 @@ namespace ServerCore
             Task t2 = new Task(Thread_2);
 
             t1.Start();
+
+            Thread.Sleep(100);
+
             t2.Start();
 
             Task.WaitAll(t1, t2);
