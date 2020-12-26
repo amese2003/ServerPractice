@@ -7,40 +7,30 @@ namespace ServerCore
         
     class Program
     {
-        static int _num = 0;
-        static Mutex _lock = new Mutex();
-
-        static void Thread_1()
-        {
-            for(int i=0; i < 100000; i++)
-            {
-                _lock.WaitOne();
-                _num++;
-                _lock.ReleaseMutex();
-            }
-        }
-
-        static void Thread_2()
-        {
-            for (int i = 0; i < 100000; i++)
-            {
-                _lock.WaitOne();
-                _num--;
-                _lock.ReleaseMutex();
-            }
-        }
+        static object _lock = new object(); // 근성
+        static SpinLock _lock2 = new SpinLock(); // 근성 + 양보
+        static Mutex _lock3 = new Mutex(); // 운영체제 갑질
 
         static void Main(string[] args)
         {
-            Task t1 = new Task(Thread_1);
-            Task t2 = new Task(Thread_2);
+            lock (_lock)
+            {
 
-            t1.Start();
-            t2.Start();
+            }
 
-            Task.WaitAll(t1, t2);
+            bool lockTaken = false;
 
-            Console.WriteLine(_num);
+            try
+            {
+                _lock2.Enter(ref lockTaken);
+            }
+            finally
+            {
+                if (lockTaken)
+                    _lock2.Exit();
+            }
+
+
         }
     }
 }
