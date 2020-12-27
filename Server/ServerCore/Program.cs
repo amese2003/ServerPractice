@@ -7,15 +7,16 @@ namespace ServerCore
         
     class Program
     {
-        static ThreadLocal<string> ThreadName = new ThreadLocal<string>();
+        static ThreadLocal<string> ThreadName = new ThreadLocal<string>(() => { return $"My Name Is {Thread.CurrentThread.ManagedThreadId}"; });
 
         static void WhoAmI()
         {
-            ThreadName.Value = $"My Name Is {Thread.CurrentThread.ManagedThreadId}";
+            bool repeat = ThreadName.IsValueCreated;
 
-            Thread.Sleep(1000);
-
-            Console.WriteLine(ThreadName.Value);
+            if (repeat)
+                Console.WriteLine(ThreadName.Value + "(repeat)");
+            else
+                Console.WriteLine(ThreadName.Value);
         }
         static void Main(string[] args)
         {
@@ -23,6 +24,7 @@ namespace ServerCore
             ThreadPool.SetMaxThreads(3, 3);
             Parallel.Invoke(WhoAmI, WhoAmI, WhoAmI, WhoAmI, WhoAmI, WhoAmI, WhoAmI);
 
+            ThreadName.Dispose();
         }
     }
 }
