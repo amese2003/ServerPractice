@@ -7,6 +7,40 @@ using System.Net;
 
 namespace ServerCore
 {
+    public abstract class PacketSession : Session
+    {
+        public static readonly int HeaderSize = 2;
+        //[size(2)][packetid(2)][...]
+        public sealed override int OnRecv(ArraySegment<byte> buffer)
+        {
+            int processLeng = 0;
+
+            while (true)
+            {
+                // 최소한의 헤더 파싱
+                if (buffer.Count < HeaderSize)
+                    break;
+
+                // 패킷이 완전체인가?
+                ushort dataSize = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
+
+                if (buffer.Count < dataSize)
+                    break;
+
+                // 패킷 조립가능!
+                OnRecvPacket(new ArraySegment<byte>(buffer.Array, buffer.Offset, dataSize));
+                //buffer.Slice()
+
+                processLeng += dataSize;
+                buffer = new ArraySegment<byte>(buffer.Array, buffer.Offset + dataSize, buffer.Count - dataSize);
+            }
+
+            return processLeng;
+        }
+
+        public abstract void OnRecvPacket(ArraySegment<byte> buffer);
+    }
+
     public abstract class Session
     {
         Socket _socket;
