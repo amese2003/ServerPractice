@@ -49,28 +49,40 @@ namespace DummyClient
 		{
 			Console.WriteLine($"OnConnected : {endPoint}");
 
-			PlayerInfoReq packet = new PlayerInfoReq() { size = 4, packetId = (ushort)PacketID.PlayerInfoReq, playerId = 1001 };
+			PlayerInfoReq packet = new PlayerInfoReq() {packetId = (ushort)PacketID.PlayerInfoReq, playerId = 1001 };
 
 
 			// 보낸다
-			for (int i = 0; i < 5; i++)
+			//for (int i = 0; i < 5; i++)
 			{
 				ArraySegment<byte> s = SendBufferHelper.Open(4096);
 				//byte[] size = BitConverter.GetBytes(packet.size);
 				//byte[] packetId = BitConverter.GetBytes(packet.packetId);
 				//byte[] playerId = BitConverter.GetBytes(packet.playerId);
 
-				ushort size = 0;
+				//ushort size = 0;
+				ushort count = 0;
 				bool success = true;
 
-				size += 2;
-				success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + size, s.Count - size), packet.packetId);
-				size += 2;
-				success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + size, s.Count - size), packet.playerId);
-				size += 8;
-				success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset, s.Count), size);
+				//Array.Copy(size, 0, s.Array, s.Offset + 0, 2);
+				//count += 2;
+				//Array.Copy(packetId, 0, s.Array, s.Offset + count, 2);
+				//count += 2;
+				//Array.Copy(playerId, 0, s.Array, s.Offset + count, 8);
+				//count += 8;
 
-				ArraySegment<byte> sendBuff = SendBufferHelper.Close(size);
+
+				
+                
+				count += 2;
+                success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), packet.packetId);
+				count += 2;
+				success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), packet.playerId);
+				count += 8;
+
+				success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset, s.Count), count);
+
+				ArraySegment<byte> sendBuff = SendBufferHelper.Close(count);
 
 				if (success)
 					Send(sendBuff);

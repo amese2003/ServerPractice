@@ -66,6 +66,7 @@ namespace Server
                 case PacketID.PlayerInfoReq:
                     long playerId = BitConverter.ToInt64(buffer.Array, buffer.Offset + pos);
                     pos += 8;
+                    Console.WriteLine($"PlayerInfoReq: {playerId}");
                     break;
 
                 case PacketID.PlayerInfoOk:
