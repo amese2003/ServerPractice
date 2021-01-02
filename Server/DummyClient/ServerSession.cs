@@ -22,44 +22,70 @@ namespace DummyClient
 	{
 		public long playerId;
 
+		// UTF-16!
+		public string name;
+
 		public PlayerInfoReq()
         {
 			this.packetId = (ushort)PacketID.PlayerInfoReq;
         }
 
-        public override void Read(ArraySegment<byte> s)
+        public override void Read(ArraySegment<byte> segment)
         {
 			ushort pos = 0;
 
+			ReadOnlySpan<byte> s = new ReadOnlySpan<byte>(segment.Array, segment.Offset, segment.Count);
+
 			//ushort size = BitConverter.ToUInt16(s.Array, s.Offset);
-			pos += 2;
+			pos += sizeof(ushort);
 			//ushort id = BitConverter.ToUInt16(s.Array, s.Offset + pos);
-			pos += 2;
+			pos += sizeof(ushort);
 
-			this.playerId = BitConverter.ToInt64(new ReadOnlySpan<byte>(s.Array, s.Offset + pos, s.Count - pos));
+			this.playerId = BitConverter.ToInt64(s.Slice(pos, s.Length - pos));
 
-			pos += 8;
+			pos += sizeof(long);
+
+			// string
+			ushort nameLeng = BitConverter.ToUInt16(s.Slice(pos, s.Length - pos));
+			pos += sizeof(ushort);
+			this.name = Encoding.Unicode.GetString(s.Slice(pos, nameLeng));
+
 		}
 
         public override ArraySegment<byte> Write()
         {
-			ArraySegment<byte> s = SendBufferHelper.Open(4096);
+			ArraySegment<byte> segment = SendBufferHelper.Open(4096);
 
-			ushort count = 0;
+			ushort pos = 0;
 			bool success = true;
 
-			count += 2;
-			success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.packetId);
-			count += 2;
-			success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.playerId);
-			count += 8;
+			Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
 
-			success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset, s.Count), count);
+			pos += sizeof(ushort);
+			success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), packetId);
+			pos += sizeof(ushort);
+			success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), this.playerId);
+			pos += sizeof(long);
+
+			// string
+			//ushort nameLeng =  (ushort)Encoding.Unicode.GetByteCount(this.name);
+			//success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), nameLeng);
+			//pos += sizeof(ushort);
+			//Array.Copy(Encoding.Unicode.GetBytes(this.name), 0, segment.Array, pos, nameLeng);
+			//pos += nameLeng;
+
+			ushort nameLeng = (ushort)Encoding.Unicode.GetBytes(this.name, 0, this.name.Length, segment.Array, segment.Offset + pos + sizeof(ushort));
+			success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), nameLeng);
+			pos += sizeof(ushort);
+			pos += nameLeng;
+
+
+			success &= BitConverter.TryWriteBytes(s, pos);
 
 			if (success == false)
 				return null;
 
-			return SendBufferHelper.Close(count);
+			return SendBufferHelper.Close(pos);
 		}
     }
 
@@ -87,7 +113,7 @@ namespace DummyClient
 		{
 			Console.WriteLine($"OnConnected : {endPoint}");
 
-			PlayerInfoReq packet = new PlayerInfoReq() { playerId = 1001 };
+			PlayerInfoReq packet = new PlayerInfoReq() { playerId = 1001, name = "abcd" };
 
 
 			// 보낸다
