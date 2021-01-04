@@ -6,6 +6,33 @@ namespace PacketGenerator
 {
     class PacketFormat
     {
+
+		// {0} 패킷 이름/번호
+		// {1} 패킷 목록
+		public static string fileFormat =
+@"
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Text;
+using System.Threading;
+using ServerCore;
+
+public enum PacketID
+{{
+    {0}
+}}
+
+{1}
+";
+		// {0} 패킷 이름
+		// {1} 패킷 번호
+		public static string packetEnumFormat =
+@"{0} = {1},";
+
+
+
+
 		// {0} 패킷 이름
 		// {1} 멤버 변수들
 		// {2} 멤버 변수 read
@@ -94,6 +121,12 @@ public List<{0}> {1}s = new List<{0}>();
 pos += sizeof({2});
 ";
 
+		// {0] 변수 이름
+		// {1} 변수 형식
+		public static string readByteFormat =
+@"this.{0} = ({1})segment.Array[segment.Offset + pos];
+pos += sizeof({1});
+";
 
 		// {0} 변수 이름
 		public static string readStringFormat =
@@ -123,6 +156,12 @@ for (int i = 0; i < {1}Leng; i++)
 @"success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), this.{0});
 pos += sizeof({1});
 ";
+
+		public static string writeByteFormat =
+@"segment.Array[segment.Offset + pos] = (byte)this.{0};
+pos += sizeof({1});
+";
+
 		// {0} 변수이름
 		public static string writeStringFormat =
 @"ushort {0}Leng = (ushort)Encoding.Unicode.GetBytes(this.{0}, 0, this.{0}.Length, segment.Array, segment.Offset + pos + sizeof(ushort));
