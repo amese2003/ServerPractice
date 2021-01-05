@@ -8,8 +8,8 @@ using ServerCore;
 
 public enum PacketID
 {
-    PlayerInfoReq = 1,
-	Test = 2,
+    C_PlayerInfoReq = 1,
+	S_Test = 2,
 	
 }
 
@@ -21,7 +21,7 @@ interface IPacket
 }
 
 
-class PlayerInfoReq : IPacket
+class C_PlayerInfoReq : IPacket
 {
 	public byte testByte;
 	public long playerId;
@@ -108,7 +108,7 @@ class PlayerInfoReq : IPacket
 		
 
 
-	public ushort Protocol { get { return (ushort)PacketID.PlayerInfoReq; } }
+	public ushort Protocol { get { return (ushort)PacketID.C_PlayerInfoReq; } }
 
     public void Read(ArraySegment<byte> segment)
     {
@@ -149,7 +149,7 @@ class PlayerInfoReq : IPacket
 		Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
 
 		pos += sizeof(ushort);
-		success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), (ushort)PacketID.PlayerInfoReq);
+		success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), (ushort)PacketID.C_PlayerInfoReq);
 		pos += sizeof(ushort);
 		segment.Array[segment.Offset + pos] = (byte)this.testByte;
 		pos += sizeof(byte);
@@ -177,12 +177,12 @@ class PlayerInfoReq : IPacket
 	}
 }
 
-class Test : IPacket
+class S_Test : IPacket
 {
 	public int testint;	
 
 
-	public ushort Protocol { get { return (ushort)PacketID.Test; } }
+	public ushort Protocol { get { return (ushort)PacketID.S_Test; } }
 
     public void Read(ArraySegment<byte> segment)
     {
@@ -205,7 +205,7 @@ class Test : IPacket
 		Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
 
 		pos += sizeof(ushort);
-		success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), (ushort)PacketID.Test);
+		success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), (ushort)PacketID.S_Test);
 		pos += sizeof(ushort);
 		success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), this.testint);
 		pos += sizeof(int);
