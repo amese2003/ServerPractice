@@ -91,7 +91,7 @@ class {0}
 
 		public static string memberListFormat =
 @"
-public struct {0}
+public class {0}
 {{
 	{2}
 
