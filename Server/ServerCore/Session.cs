@@ -127,7 +127,7 @@ namespace ServerCore
             }
             catch (Exception e)
             {
-                Console.WriteLine($"RegisterSend Failed {e]");
+                Console.WriteLine($"RegisterSend Failed {e}");
             }
 
             

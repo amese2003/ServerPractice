@@ -13,7 +13,7 @@ namespace Server
         {
             S_Chat packet = new S_Chat();
             packet.playerId = session.SessionID;
-            packet.chat = chat;
+            packet.chat = $" {chat} 난 누굴까? {packet.playerId} ";
             ArraySegment<byte> segment = packet.Write();
 
             lock (_lock)
