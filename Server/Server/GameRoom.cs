@@ -9,10 +9,23 @@ namespace Server
     {
         List<ClientSession> _sessions = new List<ClientSession>();
         JobQueue _jobQueue = new JobQueue();
+        List<ArraySegment<Byte>> _pendingList = new List<ArraySegment<byte>>();
 
         public void Push(Action job)
         {
             _jobQueue.Push(job);
+        }
+
+        public void Flush()
+        {
+           // 
+            foreach (ClientSession s in _sessions)
+            {
+                s.Send(_pendingList);
+            }
+
+            Console.WriteLine($"Flushed {_pendingList.Count} items");
+            _pendingList.Clear();
         }
 
         public void BroadCast(ClientSession session, string chat)
@@ -22,11 +35,9 @@ namespace Server
             packet.chat = $" {chat} 난 누굴까? {packet.playerId} ";
             ArraySegment<byte> segment = packet.Write();
 
-            // O(N^2) 으악;;;;
-            foreach (ClientSession s in _sessions)
-            {
-                s.Send(segment);
-            }
+            _pendingList.Add(segment);
+
+            
 
         }
 
