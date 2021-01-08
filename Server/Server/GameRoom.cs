@@ -22,6 +22,7 @@ namespace Server
             packet.chat = $" {chat} 난 누굴까? {packet.playerId} ";
             ArraySegment<byte> segment = packet.Write();
 
+            // O(N^2) 으악;;;;
             foreach (ClientSession s in _sessions)
             {
                 s.Send(segment);
