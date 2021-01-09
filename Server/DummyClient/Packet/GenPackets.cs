@@ -32,12 +32,11 @@ class C_Chat : IPacket
     {
 		ushort pos = 0;
 
-		ReadOnlySpan<byte> s = new ReadOnlySpan<byte>(segment.Array, segment.Offset, segment.Count);
 		pos += sizeof(ushort);
 		pos += sizeof(ushort);
-		ushort chatLeng = BitConverter.ToUInt16(s.Slice(pos, s.Length - pos));
+		ushort chatLeng = BitConverter.ToUInt16(segment.Array, segment.Offset + pos);
 		pos += sizeof(ushort);
-		this.chat = Encoding.Unicode.GetString(s.Slice(pos, chatLeng));
+		this.chat = Encoding.Unicode.GetString(segment.Array, segment.Offset + pos, chatLeng);
 		pos += chatLeng;
 		
 	}
@@ -46,22 +45,17 @@ class C_Chat : IPacket
     {
 		ArraySegment<byte> segment = SendBufferHelper.Open(4096);
 		ushort pos = 0;
-		bool success = true;
 
-		Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
 
 		pos += sizeof(ushort);
-		success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), (ushort)PacketID.C_Chat);
+		Array.Copy(BitConverter.GetBytes((ushort)PacketID.C_Chat), 0, segment.Array, segment.Offset + pos, sizeof(ushort));
 		pos += sizeof(ushort);
 		ushort chatLeng = (ushort)Encoding.Unicode.GetBytes(this.chat, 0, this.chat.Length, segment.Array, segment.Offset + pos + sizeof(ushort));
-		success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), chatLeng);
+		Array.Copy(BitConverter.GetBytes(chatLeng), 0, segment.Array, segment.Offset + pos, sizeof(ushort));
 		pos += sizeof(ushort);
 		pos += chatLeng;
 		
-		success &= BitConverter.TryWriteBytes(s, pos);
-
-		if (success == false)
-			return null;
+		Array.Copy(BitConverter.GetBytes(pos), 0, segment.Array, segment.Offset, sizeof(ushort));
 
 		return SendBufferHelper.Close(pos);
 	}
@@ -79,15 +73,14 @@ class S_Chat : IPacket
     {
 		ushort pos = 0;
 
-		ReadOnlySpan<byte> s = new ReadOnlySpan<byte>(segment.Array, segment.Offset, segment.Count);
 		pos += sizeof(ushort);
 		pos += sizeof(ushort);
-		this.playerId = BitConverter.ToInt32(s.Slice(pos, s.Length - pos));
+		this.playerId = BitConverter.ToInt32(segment.Array, segment.Offset + pos);
 		pos += sizeof(int);
 		
-		ushort chatLeng = BitConverter.ToUInt16(s.Slice(pos, s.Length - pos));
+		ushort chatLeng = BitConverter.ToUInt16(segment.Array, segment.Offset + pos);
 		pos += sizeof(ushort);
-		this.chat = Encoding.Unicode.GetString(s.Slice(pos, chatLeng));
+		this.chat = Encoding.Unicode.GetString(segment.Array, segment.Offset + pos, chatLeng);
 		pos += chatLeng;
 		
 	}
@@ -96,25 +89,21 @@ class S_Chat : IPacket
     {
 		ArraySegment<byte> segment = SendBufferHelper.Open(4096);
 		ushort pos = 0;
-		bool success = true;
 
-		Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
 
 		pos += sizeof(ushort);
-		success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), (ushort)PacketID.S_Chat);
+		Array.Copy(BitConverter.GetBytes((ushort)PacketID.S_Chat), 0, segment.Array, segment.Offset + pos, sizeof(ushort));
 		pos += sizeof(ushort);
-		success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), this.playerId);
+		
+		Array.Copy(BitConverter.GetBytes(playerId), 0, segment.Array, segment.Offset + pos, sizeof(int));
 		pos += sizeof(int);
 		
 		ushort chatLeng = (ushort)Encoding.Unicode.GetBytes(this.chat, 0, this.chat.Length, segment.Array, segment.Offset + pos + sizeof(ushort));
-		success &= BitConverter.TryWriteBytes(s.Slice(pos, s.Length - pos), chatLeng);
+		Array.Copy(BitConverter.GetBytes(chatLeng), 0, segment.Array, segment.Offset + pos, sizeof(ushort));
 		pos += sizeof(ushort);
 		pos += chatLeng;
 		
-		success &= BitConverter.TryWriteBytes(s, pos);
-
-		if (success == false)
-			return null;
+		Array.Copy(BitConverter.GetBytes(pos), 0, segment.Array, segment.Offset, sizeof(ushort));
 
 		return SendBufferHelper.Close(pos);
 	}
