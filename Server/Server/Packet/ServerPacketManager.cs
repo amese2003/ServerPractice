@@ -3,7 +3,7 @@ using ServerCore;
 using System;
 using System.Collections.Generic;
 
-class PacketManager
+public class PacketManager
 {
     #region Singleton
     static PacketManager _instance = new PacketManager();

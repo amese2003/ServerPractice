@@ -25,7 +25,7 @@ public interface IPacket
 }
 
 
-class S_BroadcastEnterGame : IPacket
+public class S_BroadcastEnterGame : IPacket
 {
 	public int playerId;
 	public float posX;
@@ -86,7 +86,7 @@ class S_BroadcastEnterGame : IPacket
 	}
 }
 
-class C_LeaveGame : IPacket
+public class C_LeaveGame : IPacket
 {
 		
 
@@ -118,7 +118,7 @@ class C_LeaveGame : IPacket
 	}
 }
 
-class S_BroadcastLeaveGame : IPacket
+public class S_BroadcastLeaveGame : IPacket
 {
 	public int playerId;	
 
@@ -155,7 +155,7 @@ class S_BroadcastLeaveGame : IPacket
 	}
 }
 
-class S_PlayerList : IPacket
+public class S_PlayerList : IPacket
 {
 	
 	public class Player
@@ -259,7 +259,7 @@ class S_PlayerList : IPacket
 	}
 }
 
-class C_Move : IPacket
+public class C_Move : IPacket
 {
 	public float posX;
 	public float posY;
@@ -312,7 +312,7 @@ class C_Move : IPacket
 	}
 }
 
-class S_BroadcastMove : IPacket
+public class S_BroadcastMove : IPacket
 {
 	public int playerId;
 	public float posX;
