@@ -1,5 +1,6 @@
 ﻿using DummyClient;
 using ServerCore;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -19,11 +20,30 @@ public class NetworkManager : MonoBehaviour
 
         Connector connector = new Connector();
         connector.Connecct(endPoint, () => { return _serverSession; }, 1);
+
+        StartCoroutine(CoSendPacket());
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        IPacket packet = PacketQueue.Instance.Pop();
+        if(packet != null)
+        {
+            PacketManager.Instance.HandlePacket(_serverSession, packet);
+        }
+    }
+
+    IEnumerator CoSendPacket()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(3.0f);
+            C_Chat chatPacket = new C_Chat();
+            chatPacket.chat = "Hello Unity";
+            ArraySegment<byte> segment = chatPacket.Write();
+
+            _serverSession.Send(segment);
+        }
     }
 }

@@ -73,6 +73,7 @@
     <Compile Include="Assets\Scripts\Packet\ClientPacketManager.cs" />
     <Compile Include="Assets\Scripts\Packet\GenPackets.cs" />
     <Compile Include="Assets\Scripts\Packet\PacketHandler.cs" />
+    <Compile Include="Assets\Scripts\PacketQueue.cs" />
     <Reference Include="UnityEngine.Purchasing">
       <HintPath>D:/Project/ServerPractice/Client/Library/ScriptAssemblies/UnityEngine.Purchasing.dll</HintPath>
     </Reference>

@@ -9,7 +9,7 @@ class PacketManager
     static PacketManager _instance = new PacketManager();
     public static PacketManager Instance { get { return _instance; } }
     #endregion
-    Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>> _onRecv = new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>>();
+    Dictionary<ushort, Func<PacketSession, ArraySegment<byte>, IPacket>> _makeFunc = new Dictionary<ushort, Func<PacketSession, ArraySegment<byte>, IPacket>>();
     Dictionary<ushort, Action<PacketSession, IPacket>> _handler = new Dictionary<ushort, Action<PacketSession, IPacket>>();
 
 	PacketManager()
@@ -19,14 +19,14 @@ class PacketManager
 
     public void Register()
     {
-		_onRecv.Add((ushort)PacketID.C_Chat, MakePacket<C_Chat>);
+		_makeFunc.Add((ushort)PacketID.C_Chat, MakePacket<C_Chat>);
 		_handler.Add((ushort)PacketID.C_Chat, PacketHandler.C_ChatHandler);
 
 
         
     }
 
-    public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)
+    public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer, Action<PacketSession, IPacket> _onRecvCallBack = null)
     {
         ushort pos = 0;
 
@@ -35,18 +35,31 @@ class PacketManager
         ushort id = BitConverter.ToUInt16(buffer.Array, buffer.Offset + pos);
         pos += 2;
 
-        Action<PacketSession, ArraySegment<byte>> action = null;
-        if (_onRecv.TryGetValue(id, out action))
-            action.Invoke(session, buffer);
+        Func<PacketSession, ArraySegment<byte>, IPacket> func = null;
+        if (_makeFunc.TryGetValue(id, out func))
+        {
+            IPacket packet = func.Invoke(session, buffer);
+
+            if (_onRecvCallBack != null)
+                _onRecvCallBack.Invoke(session, packet);
+            else
+                HandlePacket(session, packet);
+        }
     }
 
-    void MakePacket<T>(PacketSession session, ArraySegment<byte> buffer) where T : IPacket, new()
+
+    T MakePacket<T>(PacketSession session, ArraySegment<byte> buffer) where T : IPacket, new()
     {
         T pkt = new T();
         pkt.Read(buffer);
-
-        Action<PacketSession, IPacket> action = null;
-        if (_handler.TryGetValue(pkt.Protocol, out action))
-            action.Invoke(session, pkt);
+        return pkt;        
     }
+
+	public void HandlePacket(PacketSession session, IPacket packet)
+    {
+        Action<PacketSession, IPacket> action = null;
+        if (_handler.TryGetValue(packet.Protocol, out action))
+            action.Invoke(session, packet);
+    }
+
 }
