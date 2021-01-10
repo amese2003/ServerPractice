@@ -14,7 +14,7 @@ using ServerCore;
 using System;
 using System.Collections.Generic;
 
-class PacketManager
+public class PacketManager
 {{
     #region Singleton
     static PacketManager _instance = new PacketManager();
@@ -119,7 +119,7 @@ public interface IPacket
 
         public static string packetFormat =
 @"
-class {0} : IPacket
+public class {0} : IPacket
 {{
 	{1}	
 
@@ -220,7 +220,7 @@ pos += sizeof(ushort);
 for (int i = 0; i < {1}Leng; i++)
 {{
 	{0} {1} = new {0}();
-	{1}.Read(s, ref pos);
+	{1}.Read(segment, ref pos);
 	{1}s.Add({1});
 }}
 ";
